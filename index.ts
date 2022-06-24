@@ -1,24 +1,27 @@
 import { httpServer } from "./src/http_server/index";
 import robot from "robotjs";
-import { WebSocketServer } from "ws";
+import { createWebSocketStream, WebSocketServer } from "ws";
 import { drawCircle } from "./drawCircle";
 import { drawRectangle } from "./drawRectangle";
 import { getCapture } from "./getCapture";
+import { Duplex } from "stream";
 
 const HTTP_PORT = 3000;
 
 console.log(`Start static http server on the ${HTTP_PORT} port!`);
 httpServer.listen(HTTP_PORT);
 
-const server = new WebSocketServer({ port: 8080 });
+const WS_PORT = 8080;
+
+const server = new WebSocketServer({ port: WS_PORT });
 
 server.on("connection", (socket) => {
-  socket.send(
-    JSON.stringify({
-      type: "hello from server",
-      content: [1, "2", "hello from server"],
-    }),
-  );
+  socket.send(`connection_on_prot: ${WS_PORT}`);
+
+  const duplex: Duplex = createWebSocketStream(socket, {
+    encoding: "utf8",
+    decodeStrings: false,
+  });
 
   socket.on("message", async (data: string) => {
     try {
@@ -52,8 +55,14 @@ server.on("connection", (socket) => {
           break;
         case "mouse_position":
           console.log(`Received: ${command}`);
-          socket.send(`mouse_position ${mouse.x},${mouse.y}`);
           console.log("command completed successfully");
+
+          duplex.write(`mouse_position ${mouse.x},${mouse.y}`, (err) => {
+            if (err) {
+              console.log(err);
+            }
+          });
+
           break;
         case "draw_circle":
           console.log(`Received: ${command} radius`, +step);
@@ -76,7 +85,11 @@ server.on("connection", (socket) => {
         case "prnt_scrn":
           console.log(`Received: ${command}`);
           const capture = await getCapture();
-          socket.send(capture.data);
+          duplex.write(capture.data, (err) => {
+            if (err) {
+              console.log(err);
+            }
+          });
           console.log("command completed successfully");
           break;
         default: {
@@ -87,8 +100,4 @@ server.on("connection", (socket) => {
       socket.send(`internal_server_error`);
     }
   });
-});
-
-server.on("close", async (data: string) => {
-  console.log("connection close");
 });
