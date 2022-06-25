@@ -94,10 +94,14 @@ server.on("connection", (socket) => {
     }
   });
 
+  socket.on("close", () => {
+    console.log("Websocket close successfully");
+  });
+
   process.on("SIGINT", () => {
     duplex.write("connection_close_on_server_side");
     socket.close();
-    console.log("Websocket close successfully\n");
+    console.log("Websocket close successfully");
     process.exit(0);
   });
 });

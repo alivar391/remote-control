@@ -17,10 +17,25 @@ const robotjs_1 = __importDefault(require("robotjs"));
 const jimp_1 = __importDefault(require("jimp"));
 const getCapture = () => __awaiter(void 0, void 0, void 0, function* () {
     const mouse = robotjs_1.default.getMousePos();
-    const bitMap = robotjs_1.default.screen.capture(mouse.x - 200, mouse.y - 200, 200 * 2, 200 * 2);
-    const img = new jimp_1.default(200 * 2, 200 * 2);
-    img.bitmap.data = bitMap.image;
+    const bitMap = robotjs_1.default.screen.capture(mouse.x - 100, mouse.y - 100, 200, 200);
+    const img = new jimp_1.default(200, 200);
+    let red, green, blue;
+    bitMap.image.forEach((byte, i) => {
+        switch (i % 4) {
+            case 0:
+                return (blue = byte);
+            case 1:
+                return (green = byte);
+            case 2:
+                return (red = byte);
+            case 3:
+                img.bitmap.data[i - 3] = red;
+                img.bitmap.data[i - 2] = green;
+                img.bitmap.data[i - 1] = blue;
+                img.bitmap.data[i] = 255;
+        }
+    });
     const base64 = yield img.getBufferAsync(jimp_1.default.MIME_PNG);
-    return { data: `prnt_scrn ${base64.toString("base64")}` };
+    return { data: `prnt_scrn ${base64.toString("base64")}\0` };
 });
 exports.getCapture = getCapture;
