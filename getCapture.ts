@@ -25,5 +25,5 @@ export const getCapture = async () => {
 
   const base64 = await img.getBufferAsync(Jimp.MIME_PNG);
 
-  return { data: `prnt_scrn ${base64.toString("base64")}` };
+  return { data: `prnt_scrn ${base64.toString("base64")}\0` };
 };
