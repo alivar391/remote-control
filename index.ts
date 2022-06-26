@@ -23,7 +23,7 @@ server.on("connection", (socket) => {
   });
 
   console.log(`connection_on_port:_${WS_PORT}`);
-  duplex.write(`connection_on_port:_${WS_PORT}`);
+  duplex.write(`connection_on_port:_${WS_PORT} \0`);
 
   duplex.on("data", async (chunk: Buffer) => {
     try {
@@ -33,55 +33,55 @@ server.on("connection", (socket) => {
       switch (command) {
         case "mouse_left":
           console.log(`Received: ${command}`, +step);
-          duplex.write(command);
+          duplex.write(`${command} \0`);
           robot.moveMouse(mouse.x - Number(step), mouse.y);
           printSuccessMessage(command);
           break;
         case "mouse_right":
           console.log(`Received: ${command}`, +step);
-          duplex.write(command);
+          duplex.write(`${command} \0`);
           robot.moveMouse(mouse.x + Number(step), mouse.y);
           printSuccessMessage(command);
           break;
         case "mouse_up":
           console.log(`Received: ${command}`, +step);
-          duplex.write(command);
+          duplex.write(`${command} \0`);
           robot.moveMouse(mouse.x, mouse.y - Number(step));
           printSuccessMessage(command);
           break;
         case "mouse_down":
           console.log(`Received: ${command}`, +step);
-          duplex.write(command);
+          duplex.write(`${command} \0`);
           robot.moveMouse(mouse.x, mouse.y + Number(step));
           printSuccessMessage(command);
           break;
         case "mouse_position":
           console.log(`Received: ${command}`);
-          duplex.write(`mouse_position ${mouse.x},${mouse.y}`);
+          duplex.write(`mouse_position ${mouse.x},${mouse.y} \0`);
           printSuccessMessage(command);
           break;
         case "draw_circle":
           console.log(`Received: ${command} radius`, +step);
-          duplex.write(command);
+          duplex.write(`${command} \0`);
           drawCircle(+step);
           printSuccessMessage(command);
           break;
         case "draw_rectangle":
           console.log(`Received: ${command} width:`, +step, `height:`, +length);
-          duplex.write(command);
+          duplex.write(`${command} \0`);
           drawRectangle(+step, +length);
           printSuccessMessage(command);
           break;
         case "draw_square":
           console.log(`Received: ${command} side:`, +step);
-          duplex.write(command);
+          duplex.write(`${command} \0`);
           drawRectangle(+step, +step);
           printSuccessMessage(command);
           break;
         case "prnt_scrn":
           console.log(`Received: ${command}`);
           const capture = await getCapture();
-          duplex.write(capture.data);
+          duplex.write(`${capture.data} \0`);
           printSuccessMessage(command);
           break;
         default: {
@@ -90,7 +90,7 @@ server.on("connection", (socket) => {
       }
     } catch {
       console.log(`command complete with error`);
-      duplex.write(`internal_server_error`);
+      duplex.write(`internal_server_error \0`);
     }
   });
 
